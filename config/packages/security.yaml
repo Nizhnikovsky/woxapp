@@ -1,0 +1,49 @@
+security:
+    encoders:
+        Symfony\Component\Security\Core\User\UserInterface:
+          algorithm: bcrypt
+          cost: 12
+
+    # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+    providers:
+        database_users:
+            entity: { class: App\Domain\Model\User\User, property: username }
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        login:
+          pattern:  ^/api/login
+          stateless: true
+          anonymous: true
+          json_login:
+            check_path: /api/login
+        register:
+          pattern:  ^/register
+          stateless: true
+          anonymous: true
+
+        api:
+          pattern: ^/api
+          stateless: true
+          lexik_jwt:
+            query_parameter:
+              enabled: true
+              name:    bearer # or something else
+          guard:
+            authenticators:
+              - lexik_jwt_authentication.jwt_token_authenticator
+            # activate different ways to authenticate
+
+            # http_basic: true
+            # https://symfony.com/doc/current/security.html#a-configuring-how-your-users-will-authenticate
+
+            # form_login: true
+            # https://symfony.com/doc/current/security/form_login_setup.html
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    access_control:
+      - { path: ^/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+      - { path: ^/api/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+      - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
